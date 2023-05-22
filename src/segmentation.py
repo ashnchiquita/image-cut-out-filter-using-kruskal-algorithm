@@ -1,34 +1,38 @@
-def findRoot(rootMat, position):
-    i = position[0]
-    j = position[1]
-    temp = rootMat[i][j]
+import numpy as np
 
-    if (temp[i] != i and temp[j] != j):
-        return findRoot(rootMat, temp[i], temp[j])
-    
-    return temp
+def findRoot(rootMat, position, posCopy):
+    temp = rootMat[position[0]][position[1]]
 
-def mergeRoot(rootMat, root1, root2):
-    firstRoot = findRoot(rootMat, root1)
-    secondRoot = findRoot(rootMat, root2)
-    rootMat[secondRoot[0]][secondRoot[1]] = firstRoot
+    if (temp == position):
+        rootMat[posCopy[0]][posCopy[1]] = temp
+        return temp
+    else:
+        return findRoot(rootMat, temp, posCopy)
 
-def rgbDiff(pixel1, pixel2):
-    return (pixel1[0] - pixel2[0]) ** 2 + (pixel1[1] - pixel2[1]) ** 2 + (pixel1[2] - pixel2[2]) ** 2 
+
+def mergeRoot(rootMat, root1, root2, node2Copy):
+    rootMat[root2[0]][root2[1]] = root1
+    rootMat[node2Copy[0]][node2Copy[1]] = root1
 
 def segmentation(image, edges, threshold):
-    rootMat = []
-    rootMat
+    rootMat = [[(i,j) for j in range(image.shape[1])] for i in range(image.shape[0])]
     edgesCount = edges.size
-    edges = sorted
+
+    # kruskal algorithm
+    edges = np.array(sorted(edges, key = lambda x: x[0]))
+
     i = 0
     while (i < edgesCount and edges[i][0] <= threshold):
-        firstNode = edges[i][1]
-        secondNode = edges[i][2]
+        firstNode = (edges[i][1], edges[i][2])
+        secondNode = (edges[i][3], edges[i][4])
 
-        if (findRoot(rootMat, firstNode) != findRoot(rootMat, secondNode)):
-            mergeRoot(rootMat, firstNode, secondNode)
+        firstRoot = findRoot(rootMat, firstNode, firstNode)
+        secondRoot = findRoot(rootMat, secondNode, secondNode)
+
+        # find-union algorithm
+        if (firstRoot != secondRoot):
+            mergeRoot(rootMat, firstRoot, secondRoot, secondNode)
 
         i += 1
-    
+
     return image, rootMat
